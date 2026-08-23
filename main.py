@@ -1,39 +1,47 @@
-# Import Python packages
-from email.mime.text import MIMEText
+# Fetch a random poem from PoetryDB and mail it.
 import smtplib
-import json
+from email.mime.text import MIMEText
+
 import requests
 
-# Send API request for a random poem
-json_data = requests.get('https://poetrydb.org/random').json()
+POETRY_URL = "https://poetrydb.org/random"
+SMTP_SERVER = "localhost"
 
-# Extract the poem details from the JSON response
-title = json_data[0]['title']
-author = json_data[0]['author']
-line_count = json_data[0]['linecount']
-lines = ''
-for line in json_data[0]['lines']:
-  lines = lines + line + "\n"
+# Fill these in before running.
+SENDER_EMAIL = ""
+RECIPIENT_EMAILS = ""
 
-# A test print() statement to ensure the request and parsing processed the data 
-# correctly
-# print(title, "\n", author, "\n\n", lines)
 
-msg_body = title + "\n" + author + "\n\n" + lines
+def fetch_poem(url=POETRY_URL):
+    """Return (title, author, line_count, body) for a random poem."""
+    json_data = requests.get(url, timeout=30).json()
+    poem = json_data[0]
+    lines = ""
+    for line in poem["lines"]:
+        lines = lines + line + "\n"
+    return poem["title"], poem["author"], poem["linecount"], lines
 
-# Create plaintext message container
-msg = MIMEText(msg_body)
 
-# Prepare the metadata of the message
-sender_email = ''
-recipient_emails = ''
-msg['Subject'] = 'Your Daily Poem (' + line_count + ' lines)'
-msg['From'] = sender_email
-msg['To'] = recipient_email
+def build_message(title, author, line_count, lines, sender, recipient):
+    """Return a plaintext MIMEText message for one poem."""
+    msg = MIMEText(title + "\n" + author + "\n\n" + lines)
+    msg["Subject"] = "Your Daily Poem (" + line_count + " lines)"
+    msg["From"] = sender
+    msg["To"] = recipient
+    return msg
 
-# Send the message via our own SMTP server, but don't include the
-# envelope header.
-smtp_server = 'localhost'
-s = smtplib.SMTP(smtp_server)
-s.sendmail(sender_email, [recipient_emails], msg.as_string())
-s.quit()
+
+def main():
+    title, author, line_count, lines = fetch_poem()
+    msg = build_message(
+        title, author, line_count, lines, SENDER_EMAIL, RECIPIENT_EMAILS
+    )
+
+    # Send via the local SMTP server, without the envelope header.
+    s = smtplib.SMTP(SMTP_SERVER)
+    s.sendmail(SENDER_EMAIL, [RECIPIENT_EMAILS], msg.as_string())
+    s.quit()
+
+
+if __name__ == "__main__":
+    main()
