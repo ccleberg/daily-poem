@@ -24,21 +24,22 @@ class TestBuildMessage(unittest.TestCase):
         self.assertIn("one\ntwo", msg.get_payload())
 
 
+PAYLOAD = [
+    {
+        "title": "Sonnet",
+        "author": "Anon",
+        "linecount": "2",
+        "lines": ["first line", "second line"],
+    }
+]
+
+
 class TestFetchPoem(unittest.TestCase):
     """PoetryDB is stubbed: the test covers the shape this code expects from it,
     not the service being up."""
 
-    PAYLOAD = [
-        {
-            "title": "Sonnet",
-            "author": "Anon",
-            "linecount": "2",
-            "lines": ["first line", "second line"],
-        }
-    ]
-
     def test_fields_are_extracted_and_lines_joined(self):
-        with patch("main.requests.get", return_value=FakeResponse(self.PAYLOAD)):
+        with patch("main.requests.get", return_value=FakeResponse(PAYLOAD)):
             title, author, line_count, lines = fetch_poem()
 
         self.assertEqual(title, "Sonnet")
