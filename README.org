@@ -1,0 +1,26 @@
+#+title: daily poem
+
+* what
+python program. requests a random poem from the poetrydb api and
+emails it to a configured list of addresses.
+
+* requires
+python, and a way to send mail (e.g. mailutils on debian).
+
+* run
+#+begin_src sh
+git clone <REPO_URL>
+cd daily-poem
+pip install -r requirements.txt
+#+end_src
+
+edit main.py and set:
+- sender_email: the from address
+- recipient_emails: a list of to addresses
+- smtp_server: smtp host, defaults to localhost
+
+- then:
+
+#+begin_src sh
+python main.py
+#+end_src
